@@ -14,6 +14,7 @@ body {
     height: 500px;
 }
 
+/* Header */
 #header {
     display: flex;
     flex-direction: row;
@@ -30,11 +31,13 @@ body {
     margin-left: 10px;
 }
 
+
+/* New Pixel Button */
 #header button {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     background-color: #FFE503;
     border: none;
     border-radius: 10px;
@@ -42,29 +45,21 @@ body {
     margin-right: 10px;
     height: 40px;
     width: 40px;
-    padding: 0;
+    padding: 6px;
+    gap: 6px;
     overflow: hidden;
-    transition: width 0.35s ease 0.1s;
+    transition: width 0.35s ease;
+}
+
+#header button svg {
+    flex-shrink: 0;
 }
 
 #header button:hover {
-    width: 160px;
+    width: 165px;
 }
 
 #header button p {
     font-size: 14px;
     white-space: nowrap;
-    opacity: 0;
-    max-width: 0;
-    transform: translateX(-8px);
-    transition:
-        opacity 0.2s ease 0.1s,
-        max-width 0.35s ease 0.1s,
-        transform 0.25s ease 0.05s;
-}
-
-#header button:hover p {
-    opacity: 1;
-    max-width: 160px;
-    transform: translateX(0);
 }
