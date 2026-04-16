@@ -1,0 +1,23 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+div#title {
+    text-align: center;
+    font-weight: bold;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: blue;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    color: white;
+    border-bottom: solid 2px black;
+}
+
+div#content {
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding-bottom: 10px;
+}
