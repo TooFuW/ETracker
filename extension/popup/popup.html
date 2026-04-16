@@ -3,6 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="./popup.css">
         <title>EmailTracker</title>
     </head>
@@ -22,13 +25,11 @@
         </div>
 
         <div id="content">
-          <p>Existing pixels:</p>
           <ul id="pixelsList"></ul>
         </div>
 
         <template id="pixelTemplate">
             <li class="pixelRow">
-                <span class="pixelId"></span>
                 <span class="pixelLabel"></span>
                 <span class="pixelCreationDate"></span>
                 <span class="pixelReadCount"></span>
