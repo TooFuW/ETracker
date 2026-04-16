@@ -17,12 +17,15 @@ A self-hosted email tracking tool. Embed invisible 1×1 pixels in your emails an
 
 ```
 EmailTracker/
-├── server/          # Node.js / Express tracking server
+├── server/                  # Node.js / Express tracking server
 │   ├── server.js
-│   ├── pixel.gif    # 1×1 transparent GIF served as the pixel
-│   └── .env         # Environment variables (not committed)
-└── extension/       # Chrome extension (Manifest V3)
+│   ├── pixel.gif            # 1×1 transparent GIF served as the pixel
+│   ├── .env                 # Environment variables (not committed)
+│   └── .env.example         # Template to copy from
+└── extension/               # Chrome extension (Manifest V3)
     ├── manifest.json
+    ├── config.js            # Extension config (not committed)
+    ├── config.example.js    # Template to copy from
     └── popup/
         ├── popup.html
         ├── popup.css
@@ -44,11 +47,15 @@ cd server
 npm install
 ```
 
-Create a `.env` file:
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
 
 ```env
-SERVER_DOMAIN=https://your-domain.com
 API_KEY=your-secret-api-key
+SERVER_DOMAIN=https://your-domain.com
 ```
 
 ### Start
@@ -100,6 +107,21 @@ All admin routes require the header `X-API-Key: <your key>`.
 ---
 
 ## Chrome Extension
+
+### Setup
+
+Copy `config.example.js` to `config.js` and fill in your values:
+
+```bash
+cp config.example.js config.js
+```
+
+```js
+const CONFIG = {
+  API_URL: 'https://your-domain.com',
+  API_KEY: 'your-secret-api-key'
+};
+```
 
 ### Installation
 

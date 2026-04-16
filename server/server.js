@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
 const Database = require("better-sqlite3");
 const { randomUUID } = require("crypto");
 const { readFileSync } = require("fs");
@@ -11,6 +12,11 @@ const app = express();
 // Security headers
 app.use(helmet());
 
+// Allow requests from Chrome extensions
+app.use(cors({
+  origin: /^chrome-extension:\/\//,
+}));
+
 // Limit request body size to 10KB
 app.use(express.json({ limit: "10kb" }));
 
@@ -20,7 +26,7 @@ const globalLimiter = rateLimit({
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Trop de requêtes, réessayez plus tard." },
+  message: { error: "Too many requests, try again later." },
 });
 app.use(globalLimiter);
 
@@ -30,20 +36,20 @@ const pixelLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Trop de requêtes." },
+  message: { error: "Too many requests." },
 });
 
 // Server domain
 const SERVER_DOMAIN = process.env.SERVER_DOMAIN;
 if (!SERVER_DOMAIN) {
-  console.error("ERREUR : la variable d'environnement SERVER_DOMAIN est obligatoire.");
+  console.error("ERROR : the SERVER_DOMAIN environment variable is required.");
   process.exit(1);
 }
 
 // API key verification for admin routes
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {
-  console.error("ERREUR : la variable d'environnement API_KEY est obligatoire.");
+  console.error("ERROR : the API_KEY environment variable is required.");
   process.exit(1);
 }
 
@@ -51,7 +57,7 @@ if (!API_KEY) {
 function requireApiKey(req, res, next) {
   const key = req.headers["x-api-key"];
   if (!key || key !== API_KEY) {
-    return res.status(401).json({ error: "Non autorisé." });
+    return res.status(401).json({ error: "Unauthorized." });
   }
   next();
 }
@@ -97,17 +103,17 @@ app.get("/pixels", requireApiKey, (req, res) => {
 
 // Create a new pixel (protected)
 app.post("/pixels", requireApiKey, (req, res) => {
-  if (!req.body) return res.status(400).json({ error: "Body JSON requis (Content-Type: application/json)" });
+  if (!req.body) return res.status(400).json({ error: "Body JSON required (Content-Type: application/json)" });
   const { label } = req.body;
-  if (!label || typeof label !== "string") return res.status(400).json({ error: "label requis" });
-  if (label.length > 200) return res.status(400).json({ error: "label trop long (max 200 caractères)" });
+  if (!label || typeof label !== "string") return res.status(400).json({ error: "label required" });
+  if (label.length > 200) return res.status(400).json({ error: "label too long (max 200 characters)" });
 
   const id = randomUUID();
   db.prepare(`
     INSERT INTO pixels (id, label, created_at) VALUES (?, ?, ?)
   `).run(id, label.trim(), new Date().toISOString());
 
-  res.json({ id, url: `http://TON_DOMAINE/pixel/${id}` });
+  res.json({ id, url: `${SERVER_DOMAIN}/pixel/${id}` });
 });
 
 // Delete a pixel (protected)
@@ -116,4 +122,4 @@ app.delete("/pixels/:id", requireApiKey, (req, res) => {
   res.json({ ok: true });
 });
 
-app.listen(3000, () => console.log("Serveur sur http://localhost:3000"));
+app.listen(3000, () => console.log(`Serveur on ${SERVER_DOMAIN}`));

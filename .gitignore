@@ -138,8 +138,11 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# Server DB
 pixels.db
-# Ajouts manuels pour extension Chrome
+
+# Chrome Extension
 *.pem
 *.crx
 *.zip
+config.js
