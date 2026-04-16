@@ -8,13 +8,13 @@ const rateLimit = require("express-rate-limit");
 
 const app = express();
 
-// Headers de sécurité HTTP
+// Security headers
 app.use(helmet());
 
-// Limite la taille des corps de requête à 10 Ko
+// Limit request body size to 10KB
 app.use(express.json({ limit: "10kb" }));
 
-// Limite globale : 200 req / 15 min par IP
+// Global rate limit: 200 requests per 15 minutes per IP
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -24,7 +24,7 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-// Limite spécifique au pixel public : 30 req / 15 min par IP
+// Specific rate limit for public pixel: 30 requests per 15 minutes per IP
 const pixelLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
@@ -33,13 +33,21 @@ const pixelLimiter = rateLimit({
   message: { error: "Trop de requêtes." },
 });
 
-// Vérification de la clé API pour les routes d'administration
+// Server domain
+const SERVER_DOMAIN = process.env.SERVER_DOMAIN;
+if (!SERVER_DOMAIN) {
+  console.error("ERREUR : la variable d'environnement SERVER_DOMAIN est obligatoire.");
+  process.exit(1);
+}
+
+// API key verification for admin routes
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {
   console.error("ERREUR : la variable d'environnement API_KEY est obligatoire.");
   process.exit(1);
 }
 
+// API key verification function
 function requireApiKey(req, res, next) {
   const key = req.headers["x-api-key"];
   if (!key || key !== API_KEY) {
@@ -48,8 +56,8 @@ function requireApiKey(req, res, next) {
   next();
 }
 
+// DB initialization
 const db = new Database("pixels.db");
-
 db.exec(`
   CREATE TABLE IF NOT EXISTS pixels (
     id TEXT PRIMARY KEY,
@@ -62,7 +70,7 @@ db.exec(`
 
 const PIXEL = readFileSync("./pixel.gif");
 
-// Chargement du pixel par le destinataire (public)
+// Pixel loading by recipient (public)
 app.get("/pixel/:id", pixelLimiter, (req, res) => {
   const { id } = req.params;
 
@@ -81,13 +89,13 @@ app.get("/pixel/:id", pixelLimiter, (req, res) => {
   res.send(PIXEL);
 });
 
-// Toutes les données pour le dashboard (protégé)
+// All data for the dashboard (protected)
 app.get("/pixels", requireApiKey, (req, res) => {
   const pixels = db.prepare("SELECT * FROM pixels ORDER BY created_at DESC").all();
   res.json(pixels);
 });
 
-// Créer un nouveau pixel (protégé)
+// Create a new pixel (protected)
 app.post("/pixels", requireApiKey, (req, res) => {
   if (!req.body) return res.status(400).json({ error: "Body JSON requis (Content-Type: application/json)" });
   const { label } = req.body;
@@ -102,7 +110,7 @@ app.post("/pixels", requireApiKey, (req, res) => {
   res.json({ id, url: `http://TON_DOMAINE/pixel/${id}` });
 });
 
-// Supprimer un pixel (protégé)
+// Delete a pixel (protected)
 app.delete("/pixels/:id", requireApiKey, (req, res) => {
   db.prepare("DELETE FROM pixels WHERE id = ?").run(req.params.id);
   res.json({ ok: true });

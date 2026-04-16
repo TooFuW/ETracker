@@ -1,3 +1,124 @@
-# ETracker
+# EmailTracker
 
-Self-hosted email read tracking via pixel. Simple dashboard, Chrome extension included.
+A self-hosted email tracking tool. Embed invisible 1×1 pixels in your emails and know exactly when (and how many times) they are opened.
+
+---
+
+## How it works
+
+1. **Generate a pixel** — the server creates a unique tracking URL tied to a label of your choice.
+2. **Embed it** — paste the `<img>` tag into your email's HTML body. It is invisible to the recipient.
+3. **Track opens** — every time the email is opened and the image loads, the server increments the read counter and records the timestamp.
+4. **Manage from the extension** — the Chrome extension lets you create pixels, monitor their stats, and delete them directly from your browser.
+
+---
+
+## Project structure
+
+```
+EmailTracker/
+├── server/          # Node.js / Express tracking server
+│   ├── server.js
+│   ├── pixel.gif    # 1×1 transparent GIF served as the pixel
+│   └── .env         # Environment variables (not committed)
+└── extension/       # Chrome extension (Manifest V3)
+    ├── manifest.json
+    └── popup/
+        ├── popup.html
+        ├── popup.css
+        └── popup.js
+```
+
+---
+
+## Server
+
+### Prerequisites
+
+- Node.js 18+
+
+### Setup
+
+```bash
+cd server
+npm install
+```
+
+Create a `.env` file:
+
+```env
+SERVER_DOMAIN=https://your-domain.com
+API_KEY=your-secret-api-key
+```
+
+### Start
+
+```bash
+npm start
+# Listening on http://localhost:3000
+```
+
+### API
+
+All admin routes require the header `X-API-Key: <your key>`.
+
+| Method   | Route           | Auth | Description                               |
+|----------|-----------------|------|-------------------------------------------|
+| `GET`    | `/pixel/:id`    | No   | Serve the tracking pixel (records a read) |
+| `GET`    | `/pixels`       | Yes  | List all pixels with their stats          |
+| `POST`   | `/pixels`       | Yes  | Create a new pixel `{ "label": "..." }`   |
+| `DELETE` | `/pixels/:id`   | Yes  | Delete a pixel                            |
+
+**Create a pixel — example response:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "url": "https://your-domain.com/pixel/550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Pixel object:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "label": "Invoice email — John",
+  "created_at": "2026-04-16T10:00:00.000Z",
+  "read_count": 3,
+  "last_read_at": "2026-04-16T14:32:11.000Z"
+}
+```
+
+### Security
+
+- Rate limiting: 200 req / 15 min globally, 30 req / 15 min on the public pixel route.
+- HTTP security headers via [Helmet](https://helmetjs.github.io/).
+- Request body capped at 10 KB.
+- Admin routes protected by API key.
+
+---
+
+## Chrome Extension
+
+### Installation
+
+1. Open `chrome://extensions` in Chrome.
+2. Enable **Developer mode** (top right).
+3. Click **Load unpacked** and select the `extension/` folder.
+
+### Usage
+
+Click the **EmailTracker** icon in your toolbar to open the popup.
+
+- **Create** — enter a label and generate a new tracking pixel. The embed URL is ready to paste into your email.
+- **View** — see all your pixels: label, creation date, open count, and last open time.
+- **Delete** — remove a pixel you no longer need.
+
+> The extension communicates with your self-hosted server using the same API key configured in `.env`.
+
+---
+
+## License
+
+MIT
