@@ -36,9 +36,16 @@
             </div>
 
             <div id="createPixelContainer">
-                <h2>Create a new pixel</h2>
-                <input type="text" id="pixelLabel" maxlength="200" placeholder="Pixel Label - Label that will help you identify the email">
-                <button id="confirmCreatePixel">Create</button>
+                <div id="pixelCreation">
+                    <h2>Create a new pixel</h2>
+                    <input type="text" id="pixelLabel" maxlength="200" placeholder="Pixel Label - Label that will help you identify the email">
+                    <button id="confirmCreatePixel">Create</button>
+                </div>
+                <div id="pixelCreated">
+                    <h2>Pixel created successfully</h2>
+                    <input type="text" id="pixelUrl" readonly>
+                    <button id="copyPixelUrl">Copy</button>
+                </div>
             </div>
         </div>
 

@@ -6,8 +6,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const pixelTemplate = document.getElementById('pixelTemplate');
     const reloadPixelsButton = document.getElementById('reloadPixels');
     const createPixelButton = document.getElementById('createPixel');
-    const createPixelContainer = document.getElementById('createPixelContainer');
+    const pixelCreation = document.getElementById('pixelCreation');
+    const pixelCreated = document.getElementById('pixelCreated');
     const confirmCreatePixelButton = document.getElementById('confirmCreatePixel');
+    const copyPixelUrlButton = document.getElementById('copyPixelUrl');
   
     // Add a pixel to the list
     function addPixel(pixel) {
@@ -128,7 +130,12 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Event listener for the create pixel button
     createPixelButton.addEventListener('click', function() {
-        createPixelContainer.classList.toggle('active');
+        if (pixelCreated.classList.contains('active')) {
+            pixelCreation.classList.remove('active');
+            pixelCreated.classList.remove('active');
+        } else {
+            pixelCreation.classList.toggle('active');
+        }
     });
 
     // Creation of a new pixel
@@ -145,12 +152,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!response.ok) throw new Error(`Server error: ${response.status}`);
             return response.json();
         })
-        .then(() => {
+        .then((data) => {
+            document.getElementById('pixelLabel').value = '';
+            document.getElementById('pixelUrl').value = `<img width="1" height="1" src="${data.url}" alt="" />`;
+            pixelCreation.classList.remove('active');
+            pixelCreated.classList.add('active');
             fetchPixels();
-            createPixelContainer.classList.remove('active');
-            setTimeout(() => {
-                document.getElementById('pixelLabel').value = '';
-            }, 300);
         })
         .catch(err => {
             // Display error message
@@ -165,4 +172,20 @@ document.addEventListener('DOMContentLoaded', function () {
             confirmCreatePixelButton.disabled = false;
         })
     })
+
+    // Copy pixel URL to clipboard
+    copyPixelUrlButton.addEventListener('click', function() {
+        const pixelUrl = document.getElementById('pixelUrl').value;
+        navigator.clipboard.writeText(pixelUrl).then(() => {
+            copyPixelUrlButton.textContent = 'Copied !';
+            setTimeout(() => {
+                copyPixelUrlButton.textContent = 'Copy';
+            }, 2000);
+        }).catch(err => {
+            copyPixelUrlButton.textContent = 'Error';
+            setTimeout(() => {
+                copyPixelUrlButton.textContent = 'Copy';
+            }, 2000);
+        });
+    });
 });
