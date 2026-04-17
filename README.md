@@ -6,10 +6,10 @@ A self-hosted email tracking tool. Embed invisible 1×1 pixels in your emails an
 
 ## How it works
 
-1. **Generate a pixel** — the server creates a unique tracking URL tied to a label of your choice.
-2. **Embed it** — paste the `<img>` tag into your email's HTML body. It is invisible to the recipient.
-3. **Track opens** — every time the email is opened and the image loads, the server increments the read counter and records the timestamp.
-4. **Manage from the extension** — the Chrome extension lets you create pixels, monitor their stats, and delete them directly from your browser.
+1. **Generate a pixel** - the server creates a unique tracking URL tied to a label of your choice.
+2. **Embed it** - paste the `<img>` tag into your email's HTML body. It is invisible to the recipient.
+3. **Track opens** - every time the email is opened and the image loads, the server increments the read counter and records the timestamp.
+4. **Manage from the extension** - the Chrome extension lets you create pixels, monitor their stats, and delete them directly from your browser.
 
 ---
 
@@ -76,7 +76,7 @@ All admin routes require the header `X-API-Key: <your key>`.
 | `POST`   | `/pixels`       | Yes  | Create a new pixel `{ "label": "..." }`   |
 | `DELETE` | `/pixels/:id`   | Yes  | Delete a pixel                            |
 
-**Create a pixel — example response:**
+**Create a pixel - example response:**
 
 ```json
 {
@@ -90,7 +90,7 @@ All admin routes require the header `X-API-Key: <your key>`.
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "label": "Invoice email — John",
+  "label": "Invoice email - John",
   "created_at": "2026-04-16T10:00:00.000Z",
   "read_count": 3,
   "last_read_at": "2026-04-16T14:32:11.000Z"
@@ -133,9 +133,9 @@ const CONFIG = {
 
 Click the **EmailTracker** icon in your toolbar to open the popup.
 
-- **Create** — enter a label and generate a new tracking pixel. The embed URL is ready to paste into your email.
-- **View** — see all your pixels: label, creation date, open count, and last open time.
-- **Delete** — remove a pixel you no longer need.
+- **Create** - enter a label and generate a new tracking pixel. The embed URL is ready to paste into your email.
+- **View** - see all your pixels: label, creation date, open count, and last open time.
+- **Delete** - remove a pixel you no longer need.
 
 > The extension communicates with your self-hosted server using the same API key configured in `.env`.
 
