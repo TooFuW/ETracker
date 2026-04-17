@@ -113,11 +113,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? 'Cannot reach the server.'
                     : err.message;
                 document.getElementById('content').appendChild(error);
-                e.target.disabled = false;
             })
             .finally(() => {
                 const deleteModal = document.getElementById('deleteModal');
                 deleteModal.style.display = 'none';
+                e.target.disabled = false;
             })
         }
     });
@@ -173,10 +173,14 @@ document.addEventListener('DOMContentLoaded', function () {
         })
     })
 
-    // Copy pixel URL to clipboard
+    // Copy pixel as rich text so it can be pasted directly into email body
     copyPixelUrlButton.addEventListener('click', function() {
-        const pixelUrl = document.getElementById('pixelUrl').value;
-        navigator.clipboard.writeText(pixelUrl).then(() => {
+        const imgHtml = document.getElementById('pixelUrl').value;
+        const htmlBlob = new Blob([imgHtml], { type: 'text/html' });
+        const textBlob = new Blob([imgHtml], { type: 'text/plain' });
+        navigator.clipboard.write([
+            new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })
+        ]).then(() => {
             copyPixelUrlButton.textContent = 'Copied !';
             setTimeout(() => {
                 copyPixelUrlButton.textContent = 'Copy';
