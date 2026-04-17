@@ -72,6 +72,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add event listener for delete buttons
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('deletePixel')) {
+            // Show delete modal
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.querySelector('#confirmDelete').dataset.pixelId = e.target.dataset.pixelId;
+            deleteModal.style.display = 'flex';
+        }
+
+        else if (e.target.id === 'cancelDelete') {
+            // Hide delete modal
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.style.display = 'none';
+        }
+        
+        else if (e.target.id === 'confirmDelete') {
             const pixelId = e.target.dataset.pixelId;
             
             // Fetch pixel deletion
@@ -96,6 +109,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     : err.message;
                 document.getElementById('content').appendChild(error);
                 e.target.disabled = false;
+            })
+            .finally(() => {
+                const deleteModal = document.getElementById('deleteModal');
+                deleteModal.style.display = 'none';
             })
         }
     });
