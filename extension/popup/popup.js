@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const pixelsList = document.getElementById('pixelsList');
     const pixelTemplate = document.getElementById('pixelTemplate');
     const reloadPixelsButton = document.getElementById('reloadPixels');
+    const createPixelButton = document.getElementById('createPixel');
+    const createPixelContainer = document.getElementById('createPixelContainer');
+    const confirmCreatePixelButton = document.getElementById('confirmCreatePixel');
   
     // Add a pixel to the list
     function addPixel(pixel) {
@@ -122,4 +125,44 @@ document.addEventListener('DOMContentLoaded', function () {
         reloadPixelsButton.querySelector('svg').classList.add('loading');
         fetchPixels();
     });
+    
+    // Event listener for the create pixel button
+    createPixelButton.addEventListener('click', function() {
+        createPixelContainer.classList.toggle('active');
+    });
+
+    // Creation of a new pixel
+    confirmCreatePixelButton.addEventListener('click', function() {
+        confirmCreatePixelButton.disabled = true;
+        fetch(`${CONFIG.API_URL}/pixels`, {
+            method: 'POST',
+            headers: { 'X-API-Key': CONFIG.API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                label: document.getElementById('pixelLabel').value
+            })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`Server error: ${response.status}`);
+            return response.json();
+        })
+        .then(() => {
+            fetchPixels();
+            createPixelContainer.classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('pixelLabel').value = '';
+            }, 300);
+        })
+        .catch(err => {
+            // Display error message
+            const error = document.createElement('p');
+            error.id = 'fetchError';
+            error.textContent = err.message.includes('Failed to fetch')
+                ? 'Cannot reach the server.'
+                : err.message;
+            document.getElementById('content').appendChild(error);
+        })
+        .finally(() => {
+            confirmCreatePixelButton.disabled = false;
+        })
+    })
 });
