@@ -18,15 +18,15 @@
                     <div
                         class="flex flex-1"
                     >
-                        <input 
-                            autocomplete="off" 
-                            autocapitalize="off" 
-                            autocorrect="off" 
-                            spellcheck="false" 
+                        <input
+                            autocomplete="off"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
                             aria-invalid="false"
-                            id="email-pixel-name" 
-                            placeholder="Pixel Label" 
-                            class="input-element w-full" 
+                            id="email-pixel-name"
+                            placeholder="Pixel Label"
+                            class="input-element w-full"
                             value=""
                         >
                     </div>
@@ -46,8 +46,22 @@
 
         const button = document.getElementById('emailPixelButton');
         const pixelLabel = document.getElementById('email-pixel-name');
+
+        pixelLabel.addEventListener('input', () => {
+            button.disabled = !pixelLabel.value.trim();
+        });
+        button.disabled = true;
+
         button.addEventListener('click', () => {
-            const mailEditor = document.getElementById('rooster-editor');
+            let mailEditor = document.getElementById('rooster-editor');
+            if (!mailEditor) {
+                for (const iframe of document.querySelectorAll('iframe')) {
+                    try {
+                        mailEditor = iframe.contentDocument?.getElementById('rooster-editor');
+                        if (mailEditor) break;
+                    } catch (e) {}
+                }
+            }
             if (!mailEditor) return;
             button.disabled = true;
             fetch(`${CONFIG.API_URL}/pixels`, {
@@ -74,6 +88,11 @@
                 img.alt = '';
                 imgContainer.appendChild(img);
                 mailEditor.insertAdjacentElement('beforeend', imgContainer);
+                // Display success message
+                button.textContent = 'Pixel created';
+                setTimeout(() => {
+                    button.textContent = 'Create and insert pixel';
+                }, 2000);
             })
             .catch(() => {
                 // Display error message
@@ -83,7 +102,7 @@
                 }, 2000);
             })
             .finally(() => {
-                button.disabled = false;
+                button.disabled = !pixelLabel.value.trim();
             })
         });
     });
