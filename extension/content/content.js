@@ -2,6 +2,7 @@
     if (window.__emailTrackerInjected) return;
     window.__emailTrackerInjected = true;
 
+    // PROTONMAIL
     const observer = new MutationObserver(() => {
         const subjectInput = document.querySelector('.composer-meta:has(.composer-light-field-container)');
         if (!subjectInput || document.getElementById('emailPixelButton')) return;
@@ -47,11 +48,13 @@
         const button = document.getElementById('emailPixelButton');
         const pixelLabel = document.getElementById('email-pixel-name');
 
+        // Input event listener
         pixelLabel.addEventListener('input', () => {
             button.disabled = !pixelLabel.value.trim();
         });
         button.disabled = true;
 
+        // Button event listener
         button.addEventListener('click', () => {
             let mailEditor = document.getElementById('rooster-editor');
             if (!mailEditor) {
@@ -64,6 +67,7 @@
             }
             if (!mailEditor) return;
             button.disabled = true;
+            // After the text box is found we create the pixel
             fetch(`${CONFIG.API_URL}/pixels`, {
                 method: 'POST',
                 headers: { 'X-API-Key': CONFIG.API_KEY, 'Content-Type': 'application/json' },

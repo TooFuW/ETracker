@@ -26,6 +26,8 @@ EmailTracker/
     ├── manifest.json
     ├── config.js            # Extension config (not committed)
     ├── config.example.js    # Template to copy from
+    ├── content/
+    │   └── content.js       # Content script injected into ProtonMail composer
     └── popup/
         ├── popup.html
         ├── popup.css
@@ -131,13 +133,27 @@ const CONFIG = {
 
 ### Usage
 
+#### Popup
+
 Click the **EmailTracker** icon in your toolbar to open the popup.
 
 - **Create** - enter a label and generate a new tracking pixel. The embed URL is ready to paste into your email.
 - **View** - see all your pixels: label, creation date, open count, and last open time.
 - **Delete** - remove a pixel you no longer need.
 
+#### ProtonMail composer integration
+
+When composing an email on [mail.proton.me](https://mail.proton.me), a **Pixel Label** input and a **Create and insert pixel** button are automatically injected into the composer header. Fill in the label and click the button - the pixel is created on the server and inserted invisibly at the end of the email body in one click.
+
 > The extension communicates with your self-hosted server using the same API key configured in `.env`.
+
+### ProtonMail and HTTPS
+
+ProtonMail proxies all remote images through its own servers and **requires HTTPS**. If your server only exposes HTTP, images will not load for ProtonMail recipients (even when they allow remote content).
+
+To support ProtonMail tracking you must serve the pixel over HTTPS. The recommended setup is a domain with a TLS certificate managed by [Let's Encrypt / certbot](https://certbot.eff.org/) behind an Nginx reverse proxy.
+
+Note: because ProtonMail fetches images through its proxy, the IP recorded will be ProtonMail's server IP rather than the recipient's.
 
 ---
 
