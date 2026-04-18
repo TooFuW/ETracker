@@ -123,9 +123,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // Render pixels in the list
     function renderPixels() {
         pixelsList.innerHTML = '';
-        pixels.forEach(pixel => {
-            addPixel({ id: pixel.id, label: pixel.label, readCount: pixel.read_count });
-        });
+        if (pixels.length === 0) {
+            const empty = document.createElement('p');
+            empty.id = 'noPixelSelected';
+            empty.textContent = 'No pixels found';
+            pixelsList.appendChild(empty);
+        } else {
+            pixels.forEach(pixel => {
+                addPixel({ id: pixel.id, label: pixel.label, readCount: pixel.read_count });
+            });
+        }
         showDetails(selectedPixelId);
     }
     

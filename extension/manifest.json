@@ -13,5 +13,12 @@
     "action": {
         "default_popup": "popup/popup.html"
     },
-    "permissions": ["clipboardWrite"]
+    "permissions": ["clipboardWrite"],
+    "content_scripts": [
+        {
+            "matches": ["https://mail.proton.me/*"],
+            "js": ["content/content.js"],
+            "run_at": "document_idle"
+        }
+    ]
 }
