@@ -177,62 +177,67 @@ body {
 /* Content */
 #content {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
+    flex-direction: row;
+    align-items: stretch;
     width: 100%;
     flex: 1;
-    min-height: 0px;
-    overflow-y: auto;
+    min-height: 0;
+    overflow: hidden;
 }
 
-#content ul {
+#pixelsList {
     list-style: none;
-    width: 100%;
-    padding: 0px;
-    margin: 0px;
+    width: 200px;
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    border-right: 1px solid #ddd;
+}
+
+#detailsBlock {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
 }
 
 /* Pixel row */
 .pixelRow {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-    width: calc(100% - 20px);
+    justify-content: space-between;
+    gap: 8px;
     padding: 10px;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .pixelRow:hover {
     background-color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.pixelRow.selected {
+    background-color: #FFE503;
+}
+
+.pixelRow.selected:hover {
+    background-color: #f5da00;
 }
 
 .pixelLabel {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: #1a1a1a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.pixelDateBloc {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    width: 245px;
-}
-
-.pixelCreationDate,
-.pixelLastRead {
-    font-size: 11px;
-    color: #999;
-    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
 }
 
 .pixelReadCount {
@@ -243,41 +248,100 @@ body {
     padding: 2px 8px;
     border-radius: 20px;
     white-space: nowrap;
-    width: 15px;
+    flex-shrink: 0;
+    min-width: 20px;
     text-align: center;
 }
 
-/* Delete button */
-.deletePixel {
+.pixelRow.selected .pixelReadCount {
+    background-color: #1a1a1a;
+    color: #FFE503;
+}
+
+/* Details panel */
+#noPixelSelected {
+    color: #aaa;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+#pixelDetails {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: transparent;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#detailLabel {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    word-break: break-word;
+}
+
+#detailRow {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#detailRowTitle {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+#detailRowValue {
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Copy button in details panel */
+#copyPixelDetail {
+    padding: 7px 14px;
+    background-color: #FFE503;
+    color: #1a1a1a;
     border: none;
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    padding: 4px;
     border-radius: 8px;
-    opacity: 0.3;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
-    flex-shrink: 0;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+    align-self: flex-start;
 }
 
-.pixelRow:hover .deletePixel {
-    opacity: 1;
+#copyPixelDetail:hover {
+    background-color: #f5da00;
 }
 
-.deletePixel:hover {
-    background-color: #ffe5e5;
+#copyPixelDetail:active {
+    background-color: #ecd000;
 }
 
-.deletePixel:active {
-    background-color: #ffcccc;
+/* Delete button in details panel */
+#deletePixel {
+    margin-top: 8px;
+    padding: 7px 14px;
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+    align-self: flex-start;
 }
 
-.deletePixel svg {
-    pointer-events: none;
+#deletePixel:hover {
+    background-color: #e03333;
+}
+
+#deletePixel:active {
+    background-color: #c02a2a;
 }
 
 #deleteModal {
