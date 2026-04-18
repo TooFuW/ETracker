@@ -12,9 +12,9 @@ const app = express();
 // Security headers
 app.use(helmet());
 
-// Allow requests from Chrome extensions
+// Allow requests from Chrome extensions and webmail clients
 app.use(cors({
-  origin: /^chrome-extension:\/\//,
+  origin: [/^chrome-extension:\/\//, "https://mail.proton.me", "https://mail.google.com"],
 }));
 
 // Limit request body size to 10KB
