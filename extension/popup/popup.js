@@ -105,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .catch(err => {
             // Display error message
+            document.getElementById('fetchError')?.remove();
             const error = document.createElement('p');
             error.id = 'fetchError';
             error.textContent = err.message.includes('Failed to fetch')
