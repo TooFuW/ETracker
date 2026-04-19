@@ -151,7 +151,18 @@ When composing an email on [mail.proton.me](https://mail.proton.me), a **Pixel L
 
 ProtonMail proxies all remote images through its own servers and **requires HTTPS**. If your server only exposes HTTP, images will not load for ProtonMail recipients (even when they allow remote content).
 
-To support ProtonMail tracking you must serve the pixel over HTTPS. The recommended setup is a domain with a TLS certificate managed by [Let's Encrypt / certbot](https://certbot.eff.org/) behind an Nginx reverse proxy.
+To support ProtonMail tracking you must serve the pixel over HTTPS. If you have a domain, the recommended setup is a TLS certificate managed by [Let's Encrypt / certbot](https://certbot.eff.org/) behind an Nginx reverse proxy.
+
+If you do not have a domain or certificate, you can expose your local server through an SSH tunnel service such as [Serveo](https://serveo.net/), which gives you an HTTPS URL with no installation required:
+
+```bash
+autossh -M 0 -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R some-subdomain:80:localhost:3000 serveo.net
+# Forwarding HTTP traffic from https://some-subdomain.serveo.net
+```
+
+> autossh keeps the SSH tunnel open, preventing Serveo from shutting it down after a period of inactivity.
+
+Set `SERVER_DOMAIN` in your `.env` (and `API_URL` in the extension config) to the HTTPS URL provided by the tunnel.
 
 Note: because ProtonMail fetches images through its proxy, the IP recorded will be ProtonMail's server IP rather than the recipient's.
 
