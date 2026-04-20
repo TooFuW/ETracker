@@ -138,6 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     // Load pixels when the popup opens
+    reloadPixelsButton.querySelector('svg').classList.add('loading');
     fetchPixels();
     
     function copyPixelAsRichText(pixelId, button) {
@@ -233,6 +234,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             pixelCreation.classList.toggle('active');
         }
+    });
+
+    document.getElementById('pixelLabel').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') confirmCreatePixelButton.click();
     });
 
     // Creation of a new pixel
