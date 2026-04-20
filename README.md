@@ -27,7 +27,7 @@ EmailTracker/
     ├── config.js            # Extension config (not committed)
     ├── config.example.js    # Template to copy from
     ├── content/
-    │   └── content.js       # Content script injected into ProtonMail composer
+    │   └── content.js       # Content script injected into ProtonMail and Gmail composers
     └── popup/
         ├── popup.html
         ├── popup.css
@@ -141,15 +141,17 @@ Click the **EmailTracker** icon in your toolbar to open the popup.
 - **View** - see all your pixels: label, creation date, open count, and last open time.
 - **Delete** - remove a pixel you no longer need.
 
-#### ProtonMail composer integration
+#### Composer integration (ProtonMail and Gmail)
 
-When composing an email on [mail.proton.me](https://mail.proton.me), a **Pixel Label** input and a **Create and insert pixel** button are automatically injected into the composer header. Fill in the label and click the button - the pixel is created on the server and inserted invisibly at the end of the email body in one click.
+When composing an email on [mail.proton.me](https://mail.proton.me) or [mail.google.com](https://mail.google.com), a **Pixel Label** input and a **Create and insert pixel** button are automatically injected into the composer header. Fill in the label and click the button - the pixel is created on the server and inserted invisibly at the end of the email body in one click.
 
 > The extension communicates with your self-hosted server using the same API key configured in `.env`.
 
 ### ProtonMail and HTTPS
 
 ProtonMail proxies all remote images through its own servers and **requires HTTPS**. If your server only exposes HTTP, images will not load for ProtonMail recipients (even when they allow remote content).
+
+Even for other recipients, serving the pixel over HTTPS is strongly recommended: some email clients and security gateways block or silently drop HTTP images depending on their privacy settings, regardless of whether the sender uses ProtonMail or Gmail.
 
 To support ProtonMail tracking you must serve the pixel over HTTPS. If you have a domain, the recommended setup is a TLS certificate managed by [Let's Encrypt / certbot](https://certbot.eff.org/) behind an Nginx reverse proxy.
 
@@ -163,8 +165,6 @@ autossh -M 0 -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R some-subd
 > autossh keeps the SSH tunnel open, preventing Serveo from shutting it down after a period of inactivity.
 
 Set `SERVER_DOMAIN` in your `.env` (and `API_URL` in the extension config) to the HTTPS URL provided by the tunnel.
-
-Note: because ProtonMail fetches images through its proxy, the IP recorded will be ProtonMail's server IP rather than the recipient's.
 
 ---
 

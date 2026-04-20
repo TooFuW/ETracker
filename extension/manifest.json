@@ -16,7 +16,7 @@
     "permissions": ["clipboardWrite"],
     "content_scripts": [
         {
-            "matches": ["https://mail.proton.me/*"],
+            "matches": ["https://mail.proton.me/*", "https://mail.google.com/*"],
             "js": ["config.js", "content/content.js"],
             "run_at": "document_idle"
         }
