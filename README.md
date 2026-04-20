@@ -141,9 +141,17 @@ Click the **EmailTracker** icon in your toolbar to open the popup.
 - **View** - see all your pixels: label, creation date, open count, and last open time.
 - **Delete** - remove a pixel you no longer need.
 
+![Extension popup](https://raw.githubusercontent.com/TooFuW/emailtracker/main/Extension_popup.png)
+
 #### Composer integration (ProtonMail and Gmail)
 
 When composing an email on [mail.proton.me](https://mail.proton.me) or [mail.google.com](https://mail.google.com), a **Pixel Label** input and a **Create and insert pixel** button are automatically injected into the composer header. Fill in the label and click the button - the pixel is created on the server and inserted invisibly at the end of the email body in one click.
+
+![ProtonMail integration](https://raw.githubusercontent.com/TooFuW/emailtracker/main/Protonmail_integration.png)
+*Button injected into the ProtonMail composer*
+
+![Gmail integration](https://raw.githubusercontent.com/TooFuW/emailtracker/main/Gmail_integration.png)
+*Button injected into the Gmail composer*
 
 > The extension communicates with your self-hosted server using the same API key configured in `.env`.
 
