@@ -409,3 +409,9 @@ body {
 #modalContent #confirmDelete:active {
     background-color: #c02a2a;
 }
+
+#modalContent #confirmDelete:disabled {
+    background-color: #a88;
+    color: #ddd;
+    cursor: not-allowed;
+}
