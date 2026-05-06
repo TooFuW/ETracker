@@ -83,7 +83,8 @@ app.get("/pixel/:id", pixelLimiter, (req, res) => {
 
   const pixel = db.prepare("SELECT * FROM pixels WHERE id = ?").get(id);
 
-  if (pixel) {
+  // Update read count only if the pixel was created more than 30 seconds ago
+  if (pixel && pixel.created_at && (new Date() - new Date(pixel.created_at) > 30000)) {
     db.prepare(`
       UPDATE pixels
       SET read_count = read_count + 1, last_read_at = ?
