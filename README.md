@@ -1,6 +1,6 @@
 # EmailTracker
 
-A self-hosted email tracking tool. Embed invisible 1×1 pixels in your emails and know exactly when (and how many times) they are opened.
+A self-hosted email tracking tool. Embed invisible 1×1 pixels in your emails and know exactly when they are opened - including the email client, IP address, country, and language of the opener.
 
 ---
 
@@ -8,7 +8,7 @@ A self-hosted email tracking tool. Embed invisible 1×1 pixels in your emails an
 
 1. **Generate a pixel** - the server creates a unique tracking URL tied to a label of your choice.
 2. **Embed it** - paste the `<img>` tag into your email's HTML body. It is invisible to the recipient.
-3. **Track opens** - every time the email is opened and the image loads, the server increments the read counter and records the timestamp.
+3. **Track opens** - every time the email is opened and the image loads, the server records the full open event: timestamp, IP address, email client, country, city, and language.
 4. **Manage from the extension** - the Chrome extension lets you create pixels, monitor their stats, and delete them directly from your browser.
 
 ---
@@ -71,12 +71,13 @@ npm start
 
 All admin routes require the header `X-API-Key: <your key>`.
 
-| Method   | Route           | Auth | Description                               |
-|----------|-----------------|------|-------------------------------------------|
-| `GET`    | `/pixel/:id`    | No   | Serve the tracking pixel (records a read) |
-| `GET`    | `/pixels`       | Yes  | List all pixels with their stats          |
-| `POST`   | `/pixels`       | Yes  | Create a new pixel `{ "label": "..." }`   |
-| `DELETE` | `/pixels/:id`   | Yes  | Delete a pixel                            |
+| Method   | Route                  | Auth | Description                               |
+|----------|------------------------|------|-------------------------------------------|
+| `GET`    | `/pixel/:id`           | No   | Serve the tracking pixel (records a read) |
+| `GET`    | `/pixels`              | Yes  | List all pixels with their stats          |
+| `POST`   | `/pixels`              | Yes  | Create a new pixel `{ "label": "..." }`   |
+| `GET`    | `/pixels/:id/reads`    | Yes  | List all open events for a pixel          |
+| `DELETE` | `/pixels/:id`          | Yes  | Delete a pixel and all its open history   |
 
 **Create a pixel - example response:**
 
@@ -98,6 +99,22 @@ All admin routes require the header `X-API-Key: <your key>`.
   "last_read_at": "2026-04-16T14:32:11.000Z"
 }
 ```
+
+**Open event object (`/pixels/:id/reads`):**
+
+```json
+{
+  "id": 42,
+  "read_at": "2026-04-16T14:32:11.000Z",
+  "ip": "66.249.64.1",
+  "user_agent": "Mozilla/5.0 (compatible; GoogleImageProxy)",
+  "accept_language": "fr-FR,fr;q=0.9",
+  "country": "US",
+  "city": "Mountain View"
+}
+```
+
+> Note: most major email clients (Gmail, Apple Mail, Yahoo) proxy images through their own servers. The IP and country will reflect the proxy, not the recipient's real location. The `user_agent` field still reliably identifies which email client was used.
 
 ### Security
 
@@ -138,8 +155,8 @@ const CONFIG = {
 Click the **EmailTracker** icon in your toolbar to open the popup.
 
 - **Create** - enter a label and generate a new tracking pixel. The embed URL is ready to paste into your email.
-- **View** - see all your pixels: label, creation date, open count, and last open time.
-- **Delete** - remove a pixel you no longer need.
+- **View** - see all your pixels: label, creation date, open count, and last open time. Click a pixel to see the full open history with IP, country, email client, and language for each event.
+- **Delete** - remove a pixel and its entire open history.
 
 ![Extension popup](https://raw.githubusercontent.com/TooFuW/emailtracker/main/Extension_popup.png)
 
