@@ -415,3 +415,47 @@ body {
     color: #ddd;
     cursor: not-allowed;
 }
+
+/* Reads history */
+#readsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+}
+
+#readsSectionTitle {
+    font-size: 11px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+#readsLoading,
+#noReads {
+    font-size: 13px;
+    color: #aaa;
+}
+
+.readEntry {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.readEntryDate {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.readEntryMeta {
+    font-size: 11px;
+    color: #666;
+    word-break: break-all;
+}

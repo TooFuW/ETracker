@@ -6,6 +6,7 @@ const { randomUUID } = require("crypto");
 const { readFileSync } = require("fs");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const geoip = require("geoip-lite");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -72,6 +73,17 @@ db.exec(`
     created_at TEXT NOT NULL,
     read_count INTEGER DEFAULT 0,
     last_read_at TEXT
+  );
+  CREATE TABLE IF NOT EXISTS reads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pixel_id TEXT NOT NULL,
+    read_at TEXT NOT NULL,
+    ip TEXT,
+    user_agent TEXT,
+    accept_language TEXT,
+    country TEXT,
+    city TEXT,
+    FOREIGN KEY (pixel_id) REFERENCES pixels(id)
   )
 `);
 
@@ -83,13 +95,28 @@ app.get("/pixel/:id", pixelLimiter, (req, res) => {
 
   const pixel = db.prepare("SELECT * FROM pixels WHERE id = ?").get(id);
 
-  // Update read count only if the pixel was created more than 30 seconds ago
-  if (pixel && pixel.created_at && (new Date() - new Date(pixel.created_at) > 30000)) {
+  if (pixel) {
+    const now = new Date().toISOString();
+    const ip = req.ip;
+    const userAgent = req.headers["user-agent"] || null;
+    const acceptLanguage = req.headers["accept-language"] || null;
+    const geo = ip ? geoip.lookup(ip) : null;
+    const country = geo ? geo.country : null;
+    const city = (geo && geo.city) ? geo.city : null;
+
     db.prepare(`
-      UPDATE pixels
-      SET read_count = read_count + 1, last_read_at = ?
-      WHERE id = ?
-    `).run(new Date().toISOString(), id);
+      INSERT INTO reads (pixel_id, read_at, ip, user_agent, accept_language, country, city)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(id, now, ip, userAgent, acceptLanguage, country, city);
+
+    // Update read count only if the pixel was created more than 30 seconds ago
+    if (pixel.created_at && (new Date() - new Date(pixel.created_at) > 30000)) {
+      db.prepare(`
+        UPDATE pixels
+        SET read_count = read_count + 1, last_read_at = ?
+        WHERE id = ?
+      `).run(now, id);
+    }
   }
 
   res.set("Content-Type", "image/gif");
@@ -118,8 +145,18 @@ app.post("/pixels", requireApiKey, (req, res) => {
   res.json({ id, url: `${SERVER_DOMAIN}/pixel/${id}` });
 });
 
+// Reads history for a specific pixel (protected)
+app.get("/pixels/:id/reads", requireApiKey, (req, res) => {
+  const reads = db.prepare(`
+    SELECT id, read_at, ip, user_agent, accept_language, country, city
+    FROM reads WHERE pixel_id = ? ORDER BY read_at DESC
+  `).all(req.params.id);
+  res.json(reads);
+});
+
 // Delete a pixel (protected)
 app.delete("/pixels/:id", requireApiKey, (req, res) => {
+  db.prepare("DELETE FROM reads WHERE pixel_id = ?").run(req.params.id);
   db.prepare("DELETE FROM pixels WHERE id = ?").run(req.params.id);
   res.json({ ok: true });
 });

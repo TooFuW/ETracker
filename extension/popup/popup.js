@@ -1,3 +1,16 @@
+function detectEmailClient(userAgent) {
+    if (!userAgent) return null;
+    const ua = userAgent.toLowerCase();
+    if (ua.includes('googleimageproxy')) return 'Gmail (via Google proxy)';
+    if (ua.includes('yahoo')) return 'Yahoo Mail';
+    if (ua.includes('outlook-ios') || ua.includes('outlookandroid')) return 'Outlook mobile';
+    if (ua.includes('microsoft outlook')) return 'Outlook';
+    if (ua.includes('thunderbird')) return 'Thunderbird';
+    if (ua.includes('applewebkit') && ua.includes('mime')) return 'Apple Mail';
+    if (ua.includes('protonmail') || ua.includes('proton')) return 'Proton Mail';
+    return null;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const pixels = [];
     let selectedPixelId = null;
@@ -77,6 +90,21 @@ document.addEventListener('DOMContentLoaded', function () {
         details.appendChild(makeRow('Last opened', lastRead));
         details.appendChild(makeRow('Opens', pixel.read_count));
 
+        const readsSection = document.createElement('div');
+        readsSection.id = 'readsSection';
+
+        const readsSectionTitle = document.createElement('p');
+        readsSectionTitle.id = 'readsSectionTitle';
+        readsSectionTitle.textContent = 'Open history';
+        readsSection.appendChild(readsSectionTitle);
+
+        const readsLoading = document.createElement('p');
+        readsLoading.id = 'readsLoading';
+        readsLoading.textContent = 'Loading...';
+        readsSection.appendChild(readsLoading);
+
+        details.appendChild(readsSection);
+
         const deleteBtn = document.createElement('button');
         deleteBtn.id = 'deletePixel';
         deleteBtn.dataset.pixelId = pixelId;
@@ -84,6 +112,52 @@ document.addEventListener('DOMContentLoaded', function () {
         details.appendChild(deleteBtn);
 
         detailsBlock.appendChild(details);
+
+        fetch(`${CONFIG.API_URL}/pixels/${pixelId}/reads`, {
+            headers: { 'X-API-Key': CONFIG.API_KEY }
+        })
+        .then(r => {
+            if (!r.ok) throw new Error();
+            return r.json();
+        })
+        .then(reads => {
+            readsLoading.remove();
+            if (reads.length === 0) {
+                const noReads = document.createElement('p');
+                noReads.id = 'noReads';
+                noReads.textContent = 'No opens recorded yet';
+                readsSection.appendChild(noReads);
+                return;
+            }
+            reads.forEach(read => {
+                const entry = document.createElement('div');
+                entry.className = 'readEntry';
+
+                const dateEl = document.createElement('span');
+                dateEl.className = 'readEntryDate';
+                dateEl.textContent = new Date(read.read_at).toLocaleString('en-EN', fmt);
+                entry.appendChild(dateEl);
+
+                const metaParts = [];
+                const client = detectEmailClient(read.user_agent);
+                if (client) metaParts.push(client);
+                if (read.country) metaParts.push(read.country + (read.city ? ` (${read.city})` : ''));
+                if (read.accept_language) metaParts.push(read.accept_language.split(',')[0]);
+                if (read.ip) metaParts.push(read.ip);
+
+                if (metaParts.length > 0) {
+                    const metaEl = document.createElement('span');
+                    metaEl.className = 'readEntryMeta';
+                    metaEl.textContent = metaParts.join(' • ');
+                    entry.appendChild(metaEl);
+                }
+
+                readsSection.appendChild(entry);
+            });
+        })
+        .catch(() => {
+            readsLoading.textContent = 'Failed to load history';
+        });
     }
 
     // Fetch pixels from the server
