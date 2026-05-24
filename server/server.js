@@ -104,13 +104,13 @@ app.get("/pixel/:id", pixelLimiter, (req, res) => {
     const country = geo ? geo.country : null;
     const city = (geo && geo.city) ? geo.city : null;
 
-    db.prepare(`
-      INSERT INTO reads (pixel_id, read_at, ip, user_agent, accept_language, country, city)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(id, now, ip, userAgent, acceptLanguage, country, city);
-
-    // Update read count only if the pixel was created more than 30 seconds ago
+    // Only log if the pixel was created more than 30 seconds ago
     if (pixel.created_at && (new Date() - new Date(pixel.created_at) > 30000)) {
+      db.prepare(`
+        INSERT INTO reads (pixel_id, read_at, ip, user_agent, accept_language, country, city)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(id, now, ip, userAgent, acceptLanguage, country, city);
+
       db.prepare(`
         UPDATE pixels
         SET read_count = read_count + 1, last_read_at = ?
