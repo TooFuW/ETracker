@@ -24,10 +24,12 @@ EmailTracker/
 │   └── .env.example         # Template to copy from
 └── extension/               # Chrome extension (Manifest V3)
     ├── manifest.json
-    ├── config.js            # Extension config (not committed)
-    ├── config.example.js    # Template to copy from
     ├── content/
     │   └── content.js       # Content script injected into ProtonMail and Gmail composers
+    ├── options/             # Settings page (server URL and API key, stored via chrome.storage)
+    │   ├── options.html
+    │   ├── options.css
+    │   └── options.js
     └── popup/
         ├── popup.html
         ├── popup.css
@@ -127,26 +129,15 @@ All admin routes require the header `X-API-Key: <your key>`.
 
 ## Chrome Extension
 
-### Setup
-
-Copy `config.example.js` to `config.js` and fill in your values:
-
-```bash
-cp config.example.js config.js
-```
-
-```js
-const CONFIG = {
-  API_URL: 'https://your-domain.com',
-  API_KEY: 'your-secret-api-key'
-};
-```
-
 ### Installation
 
 1. Open `chrome://extensions` in Chrome.
 2. Enable **Developer mode** (top right).
 3. Click **Load unpacked** and select the `extension/` folder.
+
+### Setup
+
+Click the **Settings** button in the popup (or right-click the extension icon > Options) and fill in your server URL and API key. They are stored locally via `chrome.storage.local`, not synced or committed anywhere.
 
 ### Usage
 
@@ -172,7 +163,7 @@ When composing an email on [mail.proton.me](https://mail.proton.me) or [mail.goo
 
 *Button injected into the Gmail composer*
 
-> The extension communicates with your self-hosted server using the same API key configured in `.env`.
+> The extension communicates with your self-hosted server using the same API key configured in `.env`, entered in the extension's Settings page.
 
 ### ProtonMail and HTTPS
 
@@ -191,7 +182,7 @@ autossh -M 0 -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R some-subd
 
 > autossh keeps the SSH tunnel open, preventing Serveo from shutting it down after a period of inactivity.
 
-Set `SERVER_DOMAIN` in your `.env` (and `API_URL` in the extension config) to the HTTPS URL provided by the tunnel.
+Set `SERVER_DOMAIN` in your `.env` (and the server URL in the extension's Settings page) to the HTTPS URL provided by the tunnel.
 
 ---
 

@@ -11,7 +11,7 @@ function detectEmailClient(userAgent) {
     return null;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     const pixels = [];
     let selectedPixelId = null;
 
@@ -20,11 +20,45 @@ document.addEventListener('DOMContentLoaded', function () {
     const pixelTemplate = document.getElementById('pixelTemplate');
     const reloadPixelsButton = document.getElementById('reloadPixels');
     const createPixelButton = document.getElementById('createPixel');
+    const openSettingsButton = document.getElementById('openSettings');
     const pixelCreation = document.getElementById('pixelCreation');
     const pixelCreated = document.getElementById('pixelCreated');
     const confirmCreatePixelButton = document.getElementById('confirmCreatePixel');
     const copyPixelUrlButton = document.getElementById('copyPixelUrl');
-  
+
+    openSettingsButton.addEventListener('click', () => chrome.runtime.openOptionsPage());
+
+    const stored = await chrome.storage.local.get(['apiUrl', 'apiKey']);
+    if (!stored.apiUrl || !stored.apiKey) {
+        reloadPixelsButton.disabled = true;
+        createPixelButton.disabled = true;
+        const hint = document.createElement('p');
+        hint.className = 'noPixelSelected';
+        hint.textContent = 'Set your server URL and API key in Settings to get started.';
+        document.getElementById('content').appendChild(hint);
+        return;
+    }
+    const CONFIG = { API_URL: stored.apiUrl, API_KEY: stored.apiKey };
+
+    function showError(message) {
+        clearError();
+        const error = document.createElement('p');
+        error.id = 'fetchError';
+        error.textContent = message;
+        document.getElementById('content').appendChild(error);
+    }
+    function clearError() {
+        document.getElementById('fetchError')?.remove();
+    }
+
+    // Parse a fetch response, surfacing the server's own error message when available
+    async function parseJsonResponse(response) {
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(data?.error || `Server error: ${response.status}`);
+        if (data === null) throw new Error('Invalid response from server.');
+        return data;
+    }
+
     // Add a pixel to the list
     function addPixel(pixel) {
         const pixelElement = pixelTemplate.content.cloneNode(true);
@@ -48,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!pixel) {
             const hint = document.createElement('p');
-            hint.id = 'noPixelSelected';
+            hint.className = 'noPixelSelected';
             hint.textContent = 'Select a pixel to see its details';
             detailsBlock.appendChild(hint);
             return;
@@ -74,12 +108,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function makeRow(title, value) {
             const row = document.createElement('div');
-            row.id = 'detailRow';
+            row.className = 'detailRow';
             const t = document.createElement('span');
-            t.id = 'detailRowTitle';
+            t.className = 'detailRowTitle';
             t.textContent = title;
             const v = document.createElement('span');
-            v.id = 'detailRowValue';
+            v.className = 'detailRowValue';
             v.textContent = value;
             row.appendChild(t);
             row.appendChild(v);
@@ -163,13 +197,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Fetch pixels from the server
     function fetchPixels() {
         reloadPixelsButton.disabled = true;
+        clearError();
         fetch(`${CONFIG.API_URL}/pixels`, {
             headers: { 'X-API-Key': CONFIG.API_KEY }
         })
-        .then(response => {
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
-            return response.json();
-        })
+        .then(parseJsonResponse)
         .then(data => {
             pixels.length = 0;
             data.forEach(pixel => {
@@ -178,14 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
             renderPixels();
         })
         .catch(err => {
-            // Display error message
-            document.getElementById('fetchError')?.remove();
-            const error = document.createElement('p');
-            error.id = 'fetchError';
-            error.textContent = err.message.includes('Failed to fetch')
-                ? 'Cannot reach the server.'
-                : err.message;
-            document.getElementById('content').appendChild(error);
+            showError(err.message.includes('Failed to fetch') ? 'Cannot reach the server.' : err.message);
         })
         .finally(() => {
             setTimeout(() => {
@@ -200,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
         pixelsList.innerHTML = '';
         if (pixels.length === 0) {
             const empty = document.createElement('p');
-            empty.id = 'noPixelSelected';
+            empty.className = 'noPixelSelected';
             empty.textContent = 'No pixels found';
             pixelsList.appendChild(empty);
         } else {
@@ -266,25 +291,17 @@ document.addEventListener('DOMContentLoaded', function () {
             
             // Fetch pixel deletion
             e.target.disabled = true;
+            clearError();
             fetch(`${CONFIG.API_URL}/pixels/${pixelId}`, {
                 method: 'DELETE',
                 headers: { 'X-API-Key': CONFIG.API_KEY }
             })
-            .then(response => {
-                if (!response.ok) throw new Error(`Server error: ${response.status}`);
-                return response.json();
-            })
+            .then(parseJsonResponse)
             .then(() => {
                 fetchPixels();
             })
             .catch(err => {
-                // Display error message
-                const error = document.createElement('p');
-                error.id = 'fetchError';
-                error.textContent = err.message.includes('Failed to fetch')
-                    ? 'Cannot reach the server.'
-                    : err.message;
-                document.getElementById('content').appendChild(error);
+                showError(err.message.includes('Failed to fetch') ? 'Cannot reach the server.' : err.message);
             })
             .finally(() => {
                 const deleteModal = document.getElementById('deleteModal');
@@ -317,6 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Creation of a new pixel
     confirmCreatePixelButton.addEventListener('click', function() {
         confirmCreatePixelButton.disabled = true;
+        clearError();
         fetch(`${CONFIG.API_URL}/pixels`, {
             method: 'POST',
             headers: { 'X-API-Key': CONFIG.API_KEY, 'Content-Type': 'application/json' },
@@ -324,10 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 label: document.getElementById('pixelLabel').value
             })
         })
-        .then(response => {
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
-            return response.json();
-        })
+        .then(parseJsonResponse)
         .then((data) => {
             document.getElementById('pixelLabel').value = '';
             document.getElementById('pixelUrl').value = `<img width="1" height="1" src="${data.url}" alt="" />`;
@@ -336,13 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fetchPixels();
         })
         .catch(err => {
-            // Display error message
-            const error = document.createElement('p');
-            error.id = 'fetchError';
-            error.textContent = err.message.includes('Failed to fetch')
-                ? 'Cannot reach the server.'
-                : err.message;
-            document.getElementById('content').appendChild(error);
+            showError(err.message.includes('Failed to fetch') ? 'Cannot reach the server.' : err.message);
         })
         .finally(() => {
             confirmCreatePixelButton.disabled = false;

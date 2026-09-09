@@ -1,4 +1,0 @@
-const CONFIG = {
-    API_URL: 'http://localhost:3000',
-    API_KEY: 'your-secret-api-key'
-};

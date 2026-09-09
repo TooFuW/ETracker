@@ -2,6 +2,18 @@
     if (window.__emailTrackerInjected) return;
     window.__emailTrackerInjected = true;
 
+    let CONFIG = null;
+    chrome.storage.local.get(['apiUrl', 'apiKey']).then((stored) => {
+        if (stored.apiUrl && stored.apiKey) CONFIG = { API_URL: stored.apiUrl, API_KEY: stored.apiKey };
+    });
+
+    async function parseJsonResponse(response) {
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(data?.error || `Server error: ${response.status}`);
+        if (data === null) throw new Error('Invalid response from server.');
+        return data;
+    }
+
     // PROTONMAIL
     if (location.hostname.includes('mail.proton.me')) {
         const observer = new MutationObserver(() => {
@@ -58,6 +70,14 @@
             button.disabled = true;
 
             button.addEventListener('click', () => {
+                if (!CONFIG) {
+                    button.title = 'Set your server URL and API key in the extension settings first.';
+                    button.textContent = 'Not configured';
+                    setTimeout(() => {
+                        button.textContent = 'Create and insert pixel';
+                    }, 2000);
+                    return;
+                }
                 let mailEditor = document.getElementById('rooster-editor');
                 if (!mailEditor) {
                     for (const iframe of document.querySelectorAll('iframe')) {
@@ -76,10 +96,7 @@
                         label: pixelLabel.value
                     })
                 })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Server error: ${response.status}`);
-                    return response.json();
-                })
+                .then(parseJsonResponse)
                 .then((data) => {
                     pixelLabel.value = '';
                     const imgContainer = document.createElement('div');
@@ -93,12 +110,14 @@
                     img.alt = '';
                     imgContainer.appendChild(img);
                     mailEditor.insertAdjacentElement('beforeend', imgContainer);
+                    button.title = '';
                     button.textContent = 'Pixel created';
                     setTimeout(() => {
                         button.textContent = 'Create and insert pixel';
                     }, 2000);
                 })
-                .catch(() => {
+                .catch((err) => {
+                    button.title = err.message;
                     button.textContent = 'Error';
                     setTimeout(() => {
                         button.textContent = 'Create and insert pixel';
@@ -159,6 +178,14 @@
             button.disabled = true;
 
             button.addEventListener('click', () => {
+                if (!CONFIG) {
+                    button.title = 'Set your server URL and API key in the extension settings first.';
+                    button.textContent = 'Not configured';
+                    setTimeout(() => {
+                        button.textContent = 'Create and insert pixel';
+                    }, 2000);
+                    return;
+                }
                 const mailEditor = document.querySelector('div[g_editable="true"][contenteditable="true"].editable');
                 if (!mailEditor) return;
                 button.disabled = true;
@@ -169,10 +196,7 @@
                         label: pixelLabel.value
                     })
                 })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Server error: ${response.status}`);
-                    return response.json();
-                })
+                .then(parseJsonResponse)
                 .then((data) => {
                     pixelLabel.value = '';
                     const imgContainer = document.createElement('div');
@@ -183,12 +207,14 @@
                     img.alt = '';
                     imgContainer.appendChild(img);
                     mailEditor.insertAdjacentElement('beforeend', imgContainer);
+                    button.title = '';
                     button.textContent = 'Pixel created';
                     setTimeout(() => {
                         button.textContent = 'Create and insert pixel';
                     }, 2000);
                 })
-                .catch(() => {
+                .catch((err) => {
+                    button.title = err.message;
                     button.textContent = 'Error';
                     setTimeout(() => {
                         button.textContent = 'Create and insert pixel';
